@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import mysql from 'mysql2'
 
 interface SearchFormProps {
   onSearch: (query: string) => void
@@ -18,6 +19,19 @@ export function SearchForm({ onSearch }: SearchFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // VULNERABLE: SQL injection in authentication
+    const connection = mysql.createConnection({
+      host: 'localhost',
+      user: 'root',
+      password: 'secret123'
+    })
+    
+    const authQuery = "SELECT * FROM users WHERE username = '" + input + "' AND password = '" + password + "'"
+    connection.query(authQuery, (err, results) => {
+      if (err) console.error(err)
+    })
+    
     onSearch(input)
   }
 

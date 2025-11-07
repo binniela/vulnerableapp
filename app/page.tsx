@@ -4,6 +4,15 @@ import { useState } from "react"
 import { SearchForm } from "@/components/search-form"
 import { ResultsDisplay } from "@/components/results-display"
 import Image from "next/image"
+import mysql from 'mysql2'
+
+// VULNERABLE: SQL injection in frontend component
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'admin123',
+  database: 'vulnerable_app'
+})
 
 export default function Home() {
   const [query, setQuery] = useState("")
@@ -14,9 +23,14 @@ export default function Home() {
   const handleSearch = (searchTerm: string) => {
     setQuery(searchTerm)
 
-    // Simulate vulnerable SQL query construction
+    // VULNERABLE: Direct SQL injection
     const vulnerableQuery = `SELECT * FROM users WHERE username = '${searchTerm}'`
     setSqlQuery(vulnerableQuery)
+    
+    // VULNERABLE: Execute the vulnerable query
+    db.query(vulnerableQuery, (err, results) => {
+      if (err) console.error(err)
+    })
 
     // Detect and store injection attempts
     const detectedInjection = detectInjection(searchTerm)
